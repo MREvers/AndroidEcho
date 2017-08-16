@@ -16,17 +16,52 @@ import java.net.SocketAddress;
  */
 
 public class ClientSocket {
+    String IPAddress;
+    int Port;
     Socket m_Socket;
     DataOutputStream OutputStream;
     DataInputStream InputStream;
 
-    public ClientSocket() throws IOException {
-        // 10.0.2.2 is the loopback on local HOST machine.
-        // Don't forget to include Internet permissions in the manifest.
-        m_Socket = new Socket("10.0.2.2", 6881);
+    public ClientSocket(String aIPAddress, int aPort) {
+        IPAddress = aIPAddress;
+        Port = aPort;
+        m_Socket = null;
+    }
 
-        OutputStream = new DataOutputStream(m_Socket.getOutputStream());
-        InputStream = new DataInputStream(m_Socket.getInputStream());
+    public boolean Connect() {
+        try{
+            if (m_Socket == null && Port < Short.MAX_VALUE*2-1){
+                // 10.0.2.2 is the loopback on local HOST machine.
+                // Don't forget to include Internet permissions in the manifest.
+                SocketAddress socketAddress = new InetSocketAddress(IPAddress, Port);
+
+                m_Socket = new Socket();
+                m_Socket.connect(socketAddress, 200);
+
+                OutputStream = new DataOutputStream(m_Socket.getOutputStream());
+                InputStream = new DataInputStream(m_Socket.getInputStream());
+            }
+            return m_Socket == null || m_Socket.isConnected();
+        }
+        catch (IOException e){
+        }
+
+        return false;
+    }
+
+    public boolean Release(){
+        boolean bRetval = false;
+        if (m_Socket != null){
+            try{
+                m_Socket.close();
+                bRetval = true;
+            }
+            catch (IOException e){
+                bRetval = false;
+            }
+        }
+
+        return bRetval;
     }
 
     public void Send(String msg)  throws IOException {

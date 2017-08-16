@@ -14,9 +14,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.LinkedList;
+import java.lang.Integer;
 
 public class MainActivity extends AppCompatActivity {
-    LinkedList<String> MessageBuffer = new LinkedList<String>(){};
+    CommManager commManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -33,12 +35,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        commManager = new CommManager(fab);
+        commManager.Begin();
+
         // Initialize the EditText behavior
         initEditTextOperation();
-
-        // Start the new thread
-        CommThread cm = new CommThread(MessageBuffer, fab);
-        cm.start();
     }
 
     @Override
@@ -71,16 +72,24 @@ public class MainActivity extends AppCompatActivity {
         editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    handled = true;
+                boolean handled = actionId == EditorInfo.IME_ACTION_SEND;
+
+                TextView IPView = (TextView) findViewById(R.id.my_ip_input);
+                TextView PortView = (TextView) findViewById(R.id.my_port_input);
+
+                String IP = IPView.getText().toString();
+                try{
+                    Integer Port = Integer.parseInt(PortView.getText().toString());
+                    if (Port < Short.MAX_VALUE*2 - 1){
+                        Snackbar.make(v, "Text Submitted: " + v.getText(), Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+
+                        commManager.SendMessage(IP, Port, v.getText().toString());
+                    }
+                }catch (NumberFormatException e){
+                    Snackbar.make(v, "Port Not a Number", Snackbar.LENGTH_LONG)
+                            .setAction("PNaN", null).show();
                 }
-
-                Snackbar.make(v, "Text Submitted: " + v.getText(), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-
-                // The CommThread will capture this new string and will send it.
-                MessageBuffer.add(v.getText().toString());
 
                 v.setText("");
                 return handled;
