@@ -26,9 +26,11 @@ public class CommThread extends Thread {
         ClientSocket clientSock;
         try{
             clientSock = new ClientSocket();
+            snackShow("Connection Established", "Confirm");
             while(true){
                 if (MessegeQueue.size() > 0){
                     clientSock.Send(MessegeQueue.getFirst());
+                    snackShow("Sent: " + MessegeQueue.getFirst(), "Verify");
                     MessegeQueue.removeFirst();
 
                     if (!sleep(200)){break;}
@@ -36,7 +38,7 @@ public class CommThread extends Thread {
                     String szResp = "NoResp";
                     szResp = clientSock.Recv();
 
-                    snackShow(szResp, "Resp");
+                    snackShow("Server Response: " + szResp, "Resp");
                 }
 
                 if (!sleep(200)){break;}

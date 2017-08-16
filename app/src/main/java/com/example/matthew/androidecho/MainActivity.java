@@ -78,11 +78,11 @@ public class MainActivity extends AppCompatActivity {
 
                 Snackbar.make(v, "Text Submitted: " + v.getText(), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                v.setText("");
 
                 // The CommThread will capture this new string and will send it.
                 MessageBuffer.add(v.getText().toString());
 
+                v.setText("");
                 return handled;
             }
         });

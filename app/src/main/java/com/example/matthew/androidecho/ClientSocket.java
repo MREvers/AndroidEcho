@@ -38,9 +38,9 @@ public class ClientSocket {
 
     public String Recv() throws IOException{
         String szRetval = new String();
-        byte[] buf = new byte[16];
+        byte[] buf = new byte[512];
 
-        InputStream.read(buf, 0, 16);
+        InputStream.read(buf, 0, 512);
         szRetval += new String(buf);
 
         return szRetval;
