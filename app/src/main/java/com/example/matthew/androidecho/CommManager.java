@@ -14,26 +14,27 @@ import java.util.concurrent.Semaphore;
 
 public class CommManager {
     LinkedList<String> MessageBuffer = new LinkedList<String>(){};
-    CommThread commThread;
-    View         SnackBase;
+    CommThread   commThread;
+    CommOutput   commOutput;
     Semaphore    SocketMutex;
 
     String IPAddress;
     int    Port;
 
-    public CommManager(View SnackPanel){
+    public CommManager(TextView SnackPanel){
         IPAddress = "10.0.2.2";
         Port = 6881;
-        SnackBase = SnackPanel;
+        commOutput = new CommOutput(SnackPanel);
         SocketMutex = new Semaphore(1);
     }
 
     public void Begin(){
         // Set the default address.
         // Start the new thread
-        commThread = new CommThread(new ClientSocket(IPAddress, Port), MessageBuffer,
-                SnackBase, SocketMutex);
+        commThread = new CommThread(new ClientSocket(IPAddress, Port),
+                                    MessageBuffer, commOutput, SocketMutex);
         commThread.start();
+
     }
 
     public boolean ChangeAddr(String aIPAddress, int aPort){
@@ -67,9 +68,8 @@ public class CommManager {
 
     }
 
-    private void snackShow(String aMSG, String aActName){
-        Snackbar.make(SnackBase, aMSG, Snackbar.LENGTH_LONG)
-                .setAction(aActName, null).show();
+    private void snackShow(String aMSG){
+        commOutput.Send(aMSG);
     }
 
     private void acquireClient(){
@@ -77,7 +77,6 @@ public class CommManager {
             SocketMutex.acquire();
         }
         catch (InterruptedException e){
-
         }
     }
 

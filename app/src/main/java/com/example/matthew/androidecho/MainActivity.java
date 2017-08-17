@@ -25,17 +25,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        TextView tb = (TextView) findViewById(R.id.my_chat_box);
 
-        commManager = new CommManager(fab);
+        commManager = new CommManager(tb);
         commManager.Begin();
 
         // Initialize the EditText behavior
@@ -81,9 +74,6 @@ public class MainActivity extends AppCompatActivity {
                 try{
                     Integer Port = Integer.parseInt(PortView.getText().toString());
                     if (Port < Short.MAX_VALUE*2 - 1){
-                        Snackbar.make(v, "Text Submitted: " + v.getText(), Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-
                         commManager.SendMessage(IP, Port, v.getText().toString());
                     }
                 }catch (NumberFormatException e){

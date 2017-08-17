@@ -36,6 +36,7 @@ public class ClientSocket {
                 SocketAddress socketAddress = new InetSocketAddress(IPAddress, Port);
 
                 m_Socket = new Socket();
+                m_Socket.setSoTimeout(200);
                 m_Socket.connect(socketAddress, 200);
 
                 OutputStream = new DataOutputStream(m_Socket.getOutputStream());
@@ -75,8 +76,10 @@ public class ClientSocket {
         String szRetval = new String();
         byte[] buf = new byte[512];
 
-        InputStream.read(buf, 0, 512);
-        szRetval += new String(buf);
+        if (InputStream.available() > 0){
+            InputStream.read(buf, 0, 512);
+            szRetval += new String(buf);
+        }
 
         return szRetval;
     }

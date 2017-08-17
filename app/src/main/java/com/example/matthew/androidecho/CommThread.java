@@ -12,15 +12,15 @@ import java.util.concurrent.Semaphore;
  */
 
 public class CommThread extends Thread {
-    LinkedList<String> MessegeQueue = new LinkedList<>();
-    ClientSocket ClientSocket;
-    View SnackBarAnchor;
-    Semaphore SocketMutex;
+    private LinkedList<String> MessegeQueue = new LinkedList<>();
+    private ClientSocket ClientSocket;
+    private CommOutput   OutputMessenger;
+    private Semaphore    SocketMutex;
 
     public CommThread(ClientSocket clientSocket, LinkedList<String> aMsgBuffer,
-                      View aViewAnchor, Semaphore aMutex){
+                      CommOutput aMsger, Semaphore aMutex){
         MessegeQueue = aMsgBuffer;
-        SnackBarAnchor = aViewAnchor;
+        OutputMessenger = aMsger;
         ClientSocket = clientSocket;
         SocketMutex = aMutex;
     }
@@ -37,7 +37,7 @@ public class CommThread extends Thread {
         if (ClientSocket != null){
             if(!ClientSocket.Release()){
                 ClientSocket = null;
-                snackShow("Could Not Release Socket", "CT:Close");
+                snackShow("*Could Not Release Socket");
                 return false;
             }
         }
@@ -46,24 +46,31 @@ public class CommThread extends Thread {
 
     @Override
     public void run() {
+        simpleSendRecvComm();
+    }
+
+    private void simpleSendRecvComm(){
         try{
-            snackShow("Comm Thread Running", "Confirm");
+            snackShow("*Comm Thread Running");
             while(true){
                 acquireClient();
                 if (ClientSocket != null && ClientSocket.Connect()){
                     while(MessegeQueue.size() > 0){
                         ClientSocket.Send(MessegeQueue.getFirst());
-                        snackShow("Sent: " + MessegeQueue.getFirst(), "Verify");
+                        snackShow("Send: " + MessegeQueue.getFirst());
                         MessegeQueue.removeFirst();
-
-                        if (!sleep(100)){releaseClient(); continue;}
+                        if (!sleep(25)){releaseClient(); break;}
+                    }
+                    String szResp = ClientSocket.Recv();
+                    if (szResp.length() > 0){
+                        snackShow("Recv: " + szResp);
                     }
                 }
                 releaseClient();
                 if (!sleep(200)){continue;}
             }
         }catch (IOException e){
-            snackShow(e.getMessage(), "IOFail");
+            snackShow(e.getMessage());
         }
     }
 
@@ -80,9 +87,8 @@ public class CommThread extends Thread {
         }
     }
 
-    private void snackShow(String aMSG, String aActName){
-        Snackbar.make(SnackBarAnchor, aMSG, Snackbar.LENGTH_LONG)
-                .setAction(aActName, null).show();
+    private void snackShow(String aMSG){
+        OutputMessenger.Send(aMSG);
     }
 
     private void acquireClient(){
@@ -90,7 +96,6 @@ public class CommThread extends Thread {
             SocketMutex.acquire();
         }
         catch (InterruptedException e){
-
         }
     }
 
