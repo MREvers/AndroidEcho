@@ -42,7 +42,7 @@ public class ClientSocket {
                 OutputStream = new DataOutputStream(m_Socket.getOutputStream());
                 InputStream = new DataInputStream(m_Socket.getInputStream());
             }
-            return m_Socket == null || m_Socket.isConnected();
+            return m_Socket != null && (m_Socket.isConnected() && !m_Socket.isClosed());
         }
         catch (IOException e){
         }
@@ -52,7 +52,7 @@ public class ClientSocket {
 
     public boolean Release(){
         boolean bRetval = false;
-        if (m_Socket != null){
+        if (m_Socket != null && !m_Socket.isClosed()){
             try{
                 m_Socket.close();
                 bRetval = true;

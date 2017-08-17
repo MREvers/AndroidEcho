@@ -46,10 +46,14 @@ public class CommThread extends Thread {
 
     @Override
     public void run() {
-        simpleSendRecvComm();
+        boolean bRecover = true;
+        while(bRecover){
+            bRecover = simpleSendRecvComm();
+        }
     }
 
-    private void simpleSendRecvComm(){
+    private boolean simpleSendRecvComm(){
+        boolean bCanRecover = false;
         try{
             snackShow("*Comm Thread Running");
             while(true){
@@ -70,8 +74,13 @@ public class CommThread extends Thread {
                 if (!sleep(200)){continue;}
             }
         }catch (IOException e){
+            releaseClient();
             snackShow(e.getMessage());
+            SetSocket(null);
+            bCanRecover = true;
         }
+
+        return bCanRecover;
     }
 
     private boolean sleep(int aiMSecs){
